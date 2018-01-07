@@ -4,6 +4,7 @@ import cv2
 import copy
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import time
+from AI import AI
 
 
 def switch_player(player):
@@ -14,6 +15,8 @@ def switch_player(player):
 
 class Game(object):
     def __init__(self, size, auto, write, display):
+        self.player_types = [None, "AI", "AI"]
+        self.ai = AI(mode="random")
         self.size = size
         self.auto = auto
         self.display=display
@@ -40,10 +43,17 @@ class Game(object):
             k = cv2.waitKey(30) & 0xFF
             if k==27:
                 break
+            if self.player_types[self.player]=="AI":
+                x, y = self.ai.play(self.game)
+                if self.game.is_move_legal((x,y)):
+                    self.game.move(self.player, (x, y))
+                if self.game.check_victory(self.player, (x, y)):
+                    self.display_end_of_game()
+                self.player = switch_player(self.player)
 
 
     def mouse_event(self, event, mx, my, flags, param):
-        if event == cv2.EVENT_LBUTTONDOWN:
+        if event == cv2.EVENT_LBUTTONDOWN and self.player_types[self.player]=="human":
             click = [mx, my]
             square_size = self.game.board.square_size
             x = int(mx/square_size)
@@ -52,12 +62,15 @@ class Game(object):
                 self.game.move(self.player, (x, y))
 
             if self.game.check_victory(self.player, (x, y)):
-                message = "Player %i wins !" %(self.player)
-                cv2.putText(self.game.board.background, message, (int(0.1*self.game.board.length), int(0.5*self.game.board.length)), 0, 2, [150,150,150], 3)
-                cv2.imshow("Power5", self.game.board.background)
-                cv2.waitKey(2000)
-                self.reinit()
+                self.display_end_of_game()
             self.player = switch_player(self.player)
+
+    def display_end_of_game(self):
+        message = "Player %i wins !" %(self.player)
+        cv2.putText(self.game.board.background, message, (int(0.1*self.game.board.length), int(0.5*self.game.board.length)), 0, 2, [150,150,150], 3)
+        cv2.imshow("Power5", self.game.board.background)
+        cv2.waitKey(8000)
+        self.reinit()
 
 
 
