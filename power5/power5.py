@@ -31,10 +31,12 @@ class Power5(object):
         if self.is_move_legal(pos):
             self.game[pos[0], pos[1]]=player
             if player==1:
-                self.board.draw_circle(pos)
+                if self.display:
+                    self.board.draw_circle(pos)
                 self.legal_moves = [lpos for lpos in self.legal_moves if lpos!=pos]
             if player==2:
-                self.board.draw_cross(pos)
+                if self.display:
+                    self.board.draw_cross(pos)
                 self.legal_moves = [lpos for lpos in self.legal_moves if lpos!=pos]
             return True
         else:

@@ -14,16 +14,24 @@ def switch_player(player):
 
 
 class Game(object):
-    def __init__(self, size, auto, write, display):
-        self.player_types = [None, "AI", "AI"]
-        self.ai = AI(mode="NN")
+    def __init__(self, size, auto, display, training=False):
         self.size = size
         self.auto = auto
+        self.training=training
+        if self.auto:
+            self.player_types = [None, "AI", "AI"]
+            self.ai1 = AI(mode="NN")
+            self.ai1.save_model()
+            self.ai2 = AI(mode="NN")
+        else:
+            self.player_types = [None, "human", "AI"]
+            self.ai = AI(mode="NN")
+            self.training=False
         self.display=display
-        self.write = write
         self.game = power5.Power5(self.size, display=display)
         cv2.namedWindow('Power5')
-        self.delay_win = 2000
+        if self.training:
+            self.delay_win = 1
         if not self.auto:
             cv2.setMouseCallback('Power5', self.mouse_event)
 
@@ -33,23 +41,43 @@ class Game(object):
         cv2.namedWindow('Power5')
 
 
-    def main(self):
+    def run(self):
+        positions = []
         self.player = 1
-        while True:
-            # render
-            render = self.game.board.background
-            # show
-            cv2.imshow("Power5", render)
-            k = cv2.waitKey(30) & 0xFF
-            if k==27:
-                break
+        self.winner=0
+        finished=False
+        while not finished:
+            if self.display:
+                render = self.game.board.background
+                cv2.imshow("Power5", render)
+                k = cv2.waitKey(30) & 0xFF
+                if k==27:
+                    break
             if self.player_types[self.player]=="AI":
-                x, y = self.ai.play(self.game)
+                if self.auto:
+                    if self.player==1:
+                        x, y = self.ai1.play(self.game)
+                    else:
+                        x, y = self.ai2.play(self.game)
+                else:
+                    x, y = self.ai.play(self.game)
                 if self.game.is_move_legal((x,y)):
                     self.game.move(self.player, (x, y))
+
                 if self.game.check_victory(self.player, (x, y)):
-                    self.display_end_of_game()
+                    self.winner = self.player
+                    finished=True
+                    if self.display:
+                        self.display_end_of_game()
+                if self.game.is_draw():
+                    self.winner = 0
+                    finished=True
+                    if self.display:
+                        self.display_end_draw()
                 self.player = switch_player(self.player)
+                positions.append(copy.deepcopy(self.game.game))
+        if self.training:
+            return positions, self.winner
 
 
     def mouse_event(self, event, mx, my, flags, param):
@@ -69,7 +97,15 @@ class Game(object):
         message = "Player %i wins !" %(self.player)
         cv2.putText(self.game.board.background, message, (int(0.1*self.game.board.length), int(0.5*self.game.board.length)), 0, 2, [150,150,150], 3)
         cv2.imshow("Power5", self.game.board.background)
-        cv2.waitKey(8000)
+        cv2.waitKey(self.delay_win)
+        self.reinit()
+
+
+    def display_end_draw(self):
+        message = "Draw !"
+        cv2.putText(self.game.board.background, message, (int(0.1*self.game.board.length), int(0.5*self.game.board.length)), 0, 2, [150,150,150], 3)
+        cv2.imshow("Power5", self.game.board.background)
+        cv2.waitKey(self.delay_win)
         self.reinit()
 
 
@@ -79,9 +115,8 @@ if __name__ == "__main__":
     description = "Power5. Line up 5 pawns in a row and you win. "
     parser = ArgumentParser(description=description, formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument("-s", "--size", type=int , default=10, help="Size of board in pixels")
-    parser.add_argument("-w", "--write", type=str, default='', help="Write images in specified dir")
     parser.add_argument("-a", "--auto", action='store_true', default=False, help="Computer plays itself")
     args = parser.parse_args()
     # launch game
-    game = Game(args.size, args.auto, args.write, display=True)
-    game.main()
+    game = Game(args.size, args.auto, display=True)
+    game.run()

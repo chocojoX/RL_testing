@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import copy
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Dense, Activation, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.optimizers import SGD, Adadelta
 
@@ -12,6 +12,7 @@ class AI(object):
 
         self.mode = mode
         self.player=player
+        self.model_file = 'models/my_model.h5'
 
         if self.mode=="NN":
             input_shape = (size, size, 1)
@@ -52,6 +53,7 @@ class AI(object):
 
     def NN_play(self, power5):
         legal = power5.legal_moves
+        all_scores = []
         best_score = -100000000
         idx = -1
         board = power5.game
@@ -59,8 +61,17 @@ class AI(object):
         for i, pos in enumerate(legal):
             board_tmp = copy.deepcopy(board).reshape(board.shape[0], board.shape[1], 1)[None, : , :, :]
             board_tmp[:, pos[0], pos[1], :] = self.player
-            score = self.model.predict(board_tmp)
+            score = self.model.predict(board_tmp)[0][0]
+            all_scores.append(score)
             if score>best_score:
                 idx = i
                 best_score=score
+        proba = np.exp(np.array(all_scores)) / (np.sum(np.exp(np.array(all_scores))))
+        idx = np.random.choice(len(legal), 1,  p=proba)[0]
         return legal[idx]
+
+    def save_model(self):
+        self.model.save(self.model_file)
+
+    def load_model(self):
+        self.model = load_model(self.model_file)
