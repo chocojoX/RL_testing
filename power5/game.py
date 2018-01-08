@@ -16,7 +16,7 @@ def switch_player(player):
 class Game(object):
     def __init__(self, size, auto, write, display):
         self.player_types = [None, "AI", "AI"]
-        self.ai = AI(mode="random")
+        self.ai = AI(mode="NN")
         self.size = size
         self.auto = auto
         self.display=display
