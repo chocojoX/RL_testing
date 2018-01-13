@@ -10,6 +10,15 @@ def initialize_legal_moves(size):
     return legal
 
 
+def player_number(player):
+    if player==1:
+        return 1
+    elif player==2:
+        return -1
+    else:
+        return 1/0
+
+
 
 class Power5(object):
     def __init__(self, size=10, display=True):
@@ -29,7 +38,7 @@ class Power5(object):
 
     def move(self, player, pos):
         if self.is_move_legal(pos):
-            self.game[pos[0], pos[1]]=player
+            self.game[pos[0], pos[1]]=player_number(player)
             if player==1:
                 if self.display:
                     self.board.draw_circle(pos)
@@ -48,7 +57,7 @@ class Power5(object):
         consecutive = 1
         for i in [-4, -3, -2, -1, 1, 2, 3, 4]:
             if pos[0]+i>=0 and pos[0]+i<self.size:
-                if self.game[pos[0]+i, pos[1]]==player:
+                if self.game[pos[0]+i, pos[1]]==player_number(player):
                     consecutive += 1
                 else:
                     consecutive = 1
@@ -57,7 +66,7 @@ class Power5(object):
         # Vertical checking
         for i in [-4, -3, -2, -1, 1, 2, 3, 4]:
             if pos[1]+i>=0 and pos[1]+i<self.size:
-                if self.game[pos[0], pos[1]+i]==player:
+                if self.game[pos[0], pos[1]+i]==player_number(player):
                     consecutive += 1
                 else:
                     consecutive = 1
@@ -66,7 +75,7 @@ class Power5(object):
         # Up-Down Diagonal
         for i in [-4, -3, -2, -1, 1, 2, 3, 4]:
             if pos[0]+i>=0 and pos[0]+i<self.size and pos[1]+i>=0 and pos[1]+i<self.size:
-                if self.game[pos[0]+i, pos[1]+i]==player:
+                if self.game[pos[0]+i, pos[1]+i]==player_number(player):
                     consecutive += 1
                 else:
                     consecutive = 1
@@ -75,7 +84,7 @@ class Power5(object):
         # Down-Up Diagonal
         for i in [-4, -3, -2, -1, 1, 2, 3, 4]:
             if pos[0]-i>=0 and pos[0]-i<self.size and pos[1]+i>=0 and pos[1]+i<self.size:
-                if self.game[pos[0]-i, pos[1]+i]==player:
+                if self.game[pos[0]-i, pos[1]+i]==player_number(player):
                     consecutive += 1
                 else:
                     consecutive = 1
@@ -84,4 +93,4 @@ class Power5(object):
         return False
 
     def is_draw(self):
-        return np.sum(np.abs(self.game)) == self.size**2
+        return len(self.legal_moves)==0

@@ -14,19 +14,12 @@ def switch_player(player):
 
 
 class Game(object):
-    def __init__(self, size, auto, display, training=False):
+    def __init__(self, size, auto, display, training=False, players = ["human", "human"]):
         self.size = size
         self.auto = auto
         self.training=training
-        if self.auto:
-            self.player_types = [None, "AI", "AI"]
-            self.ai1 = AI(mode="NN")
-            self.ai1.save_model()
-            self.ai2 = AI(mode="NN")
-        else:
-            self.player_types = [None, "human", "AI"]
-            self.ai = AI(mode="NN")
-            self.training=False
+        self.players = players
+
         self.display=display
         self.game = power5.Power5(self.size, display=display)
         cv2.namedWindow('Power5')
@@ -53,14 +46,12 @@ class Game(object):
                 k = cv2.waitKey(30) & 0xFF
                 if k==27:
                     break
-            if self.player_types[self.player]=="AI":
+            if self.players[self.player-1]!="human":
                 if self.auto:
                     if self.player==1:
-                        x, y = self.ai1.play(self.game)
+                        x, y = self.players[0].play(self.game)
                     else:
-                        x, y = self.ai2.play(self.game)
-                else:
-                    x, y = self.ai.play(self.game)
+                        x, y = self.players[1].play(self.game)
                 if self.game.is_move_legal((x,y)):
                     self.game.move(self.player, (x, y))
 
@@ -81,7 +72,7 @@ class Game(object):
 
 
     def mouse_event(self, event, mx, my, flags, param):
-        if event == cv2.EVENT_LBUTTONDOWN and self.player_types[self.player]=="human":
+        if event == cv2.EVENT_LBUTTONDOWN and self.players[self.player-1]=="human":
             click = [mx, my]
             square_size = self.game.board.square_size
             x = int(mx/square_size)

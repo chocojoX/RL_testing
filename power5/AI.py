@@ -6,32 +6,41 @@ from keras.layers import Dense, Activation, Conv2D, MaxPooling2D, Dropout, Flatt
 from keras.optimizers import SGD, Adadelta
 
 
+def player_number(player):
+    if player==1:
+        return 1
+    elif player==2:
+        return -1
+    else:
+        return 1/0
+
 
 class AI(object):
-    def __init__(self, mode="NN", size =10, player=1):
+    def __init__(self, mode="NN", size =10, player=1, load=True, model_file="models/my_model.h5"):
 
         self.mode = mode
         self.player=player
-        self.model_file = 'models/my_model.h5'
+        self.model_file = model_file
 
-        if self.mode=="NN":
+        if load:
+            self.load_model()
+
+        if self.mode=="NN" and load==False:
             input_shape = (size, size, 1)
             self.model = Sequential()
-            self.model.add(Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=input_shape))
-            self.model.add(Conv2D(32, (3, 3), kernel_initializer='random_uniform', activation='relu'))
-            self.model.add(MaxPooling2D(pool_size=(2, 2)))
-            self.model.add(Dropout(0.25))
+            self.model.add(Conv2D(20, (5, 5), padding='same', activation='relu', input_shape=input_shape))
+            # self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            # self.model.add(Dropout(0.25))
 
-            self.model.add(Conv2D(64, (3, 3), kernel_initializer='random_uniform', padding='same', activation='relu'))
-            self.model.add(Conv2D(64, (3, 3), kernel_initializer='random_uniform', activation='relu'))
-            self.model.add(MaxPooling2D(pool_size=(2, 2)))
-            self.model.add(Dropout(0.25))
+            # self.model.add(Conv2D(20, (5, 5), kernel_initializer='random_uniform', padding='same', activation='relu'))
+            # self.model.add(MaxPooling2D(pool_size=(2, 2)))
+            # self.model.add(Dropout(0.25))
 
             self.model.add(Flatten())
-            self.model.add(Dense(8, kernel_initializer='random_uniform', activation='relu'))
-            self.model.add(Dropout(0.5))
+            self.model.add(Dense(4, kernel_initializer='random_uniform', activation='relu'))
             self.model.add(Dense(1, activation='linear'))
             self.model.compile(loss='mean_squared_error', optimizer='sgd')
+            self.save_model()
 
 
     def play(self, power5):
@@ -58,15 +67,17 @@ class AI(object):
         idx = -1
         board = power5.game
 
+        all_boards=[]
         for i, pos in enumerate(legal):
-            board_tmp = copy.deepcopy(board).reshape(board.shape[0], board.shape[1], 1)[None, : , :, :]
-            board_tmp[:, pos[0], pos[1], :] = self.player
-            score = self.model.predict(board_tmp)[0][0]
-            all_scores.append(score)
-            if score>best_score:
-                idx = i
-                best_score=score
-        proba = np.exp(np.array(all_scores)) / (np.sum(np.exp(np.array(all_scores))))
+            board_tmp = player_number(self.player) * board.reshape(board.shape[0], board.shape[1], 1)[: , :, :]
+            board_tmp[pos[0], pos[1], :] = player_number(self.player)
+            all_boards.append(board_tmp)
+        scores = self.model.predict(np.array(all_boards))
+        # all_scores.append(10*score)
+        # if score>best_score:
+        #     idx = i
+        #     best_score=score
+        proba = (np.exp(scores) / (np.sum(np.exp(scores))))[:, 0]
         idx = np.random.choice(len(legal), 1,  p=proba)[0]
         return legal[idx]
 
