@@ -14,8 +14,8 @@ class Trainer(object):
         self.model = load_model(self.model_file)
 
 
-    def run_game(self, size=10, display=False):
-        game = Game(size, auto=True, display=False, training=True)
+    def run_game(self, players, size=10, display=False):
+        game = Game(size, auto=True, display=False, training=True, players=players)
         positions, winner = game.run()
         if winner==1:
             score=1
@@ -30,9 +30,11 @@ class Trainer(object):
             self.scores.append(score*self.gamma**(n-i))
 
     def run(self, n_games=2, size=10, display=False):
+        ai1 = AI(mode="NN", size =10, player=1, load=True, model_file=self.model_file)
+        ai2 = AI(mode="NN", size =10, player=2, load=True, model_file=self.model_file)
         for i in range(n_games):
             print(i)
-            self.run_game(size=10)
+            self.run_game(size=10, players=[ai1, ai2])
 
         self.positions = np.array(self.positions).reshape(len(self.positions), size, size, 1)
         self.scores = np.array(self.scores)
