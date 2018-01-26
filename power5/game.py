@@ -19,6 +19,7 @@ class Game(object):
         self.auto = auto
         self.training=training
         self.players = players
+        self.delay_win=10000
 
         self.display=display
         self.game = power5.Power5(self.size, display=display)
@@ -47,11 +48,10 @@ class Game(object):
                 if k==27:
                     break
             if self.players[self.player-1]!="human":
-                if self.auto:
-                    if self.player==1:
-                        x, y = self.players[0].play(self.game)
-                    else:
-                        x, y = self.players[1].play(self.game)
+                if self.player==1:
+                    x, y = self.players[0].play(self.game)
+                else:
+                    x, y = self.players[1].play(self.game)
                 if self.game.is_move_legal((x,y)):
                     self.game.move(self.player, (x, y))
 
