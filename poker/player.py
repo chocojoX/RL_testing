@@ -41,7 +41,11 @@ class Player(object):
         else:
             print("Player %i has no cards in hand" %(self.id))
 
+    def act(self, state):
+        pass
+
 
     def random_play(self, bb, state):
         p_check_fold = 0.5
         p_call = 0.3
+        pass

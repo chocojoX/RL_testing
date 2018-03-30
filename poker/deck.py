@@ -31,19 +31,40 @@ class Deck(object):
                 card2 = card
                 self.cards[card] = player.get_id()
         player.deal_cards(card1, card2)
+        return [card1, card2]
 
 
-    def deal_card_to_player(self, card, player_id):
-        self.cards[card] = player_id
+    def deal_flop(self):
+        flop = []
+        cards = [*self.cards]   #List of the keys of the dictionnary
+        for i in range(3):
+            card1 = None
+            while card1 is None:
+                card = np.random.choice(cards, 1)[0]
+                if self.cards[card] == "deck":
+                    card1 = card
+                    self.cards[card] = "flop"
+                    flop.append(card)
+        return flop
 
 
-    def deal_card_to_flop(self, card):
-        self.cards[card] = "flop"
+    def deal_river(self):
+        cards = [*self.cards]   #List of the keys of the dictionnary
+        card1 = None
+        while card1 is None:
+            card = np.random.choice(cards, 1)[0]
+            if self.cards[card] == "deck":
+                card1 = card
+                self.cards[card] = "river"
+        return card
 
 
-    def deal_card_to_river(self, card):
-        self.cards[card] = "river"
-
-
-    def deal_card_to_turn(self, card):
-        self.cards[card] = "turn"
+    def deal_turn(self):
+        cards = [*self.cards]   #List of the keys of the dictionnary
+        card1 = None
+        while card1 is None:
+            card = np.random.choice(cards, 1)[0]
+            if self.cards[card] == "deck":
+                card1 = card
+                self.cards[card] = "turn"
+        return card
