@@ -21,7 +21,7 @@ class Game(object):
     def deal_to_players(self):
         for p in self.players:
             self.deck.deal_player(p)
-            print(p.get_id(), p.cards)
+            p.print_cards()
         #TODO
         pass
 
