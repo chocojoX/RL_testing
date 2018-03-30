@@ -20,9 +20,17 @@ class Deck(object):
         card1 = None
         while card1 is None:
             card = np.random.choice(cards, 1)[0]
-            if self.cards[card] != "deck":
+            if self.cards[card] == "deck":
                 card1 = card
                 self.cards[card] = player.get_id()
+
+        card2 = None
+        while card2 is None:
+            card = np.random.choice(cards, 1)[0]
+            if self.cards[card] == "deck":
+                card2 = card
+                self.cards[card] = player.get_id()
+        player.deal_cards(card1, card2)
 
 
     def deal_card_to_player(self, card, player_id):

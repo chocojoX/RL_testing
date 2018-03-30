@@ -12,7 +12,7 @@ class Game(object):
         # All players are AI for the moment
         self.players = [Player(stack=stack, id=i) for i in range(n_players)]
         self.deck = Deck()
-        self.table = Table()
+        self.table = Table(players = self.players)
         self.status = "preflop"
         self.button_position = 0
         self.state = None # TODO : define the state as everything the players can see (history, pot, public cards...)
@@ -21,6 +21,7 @@ class Game(object):
     def deal_to_players(self):
         for p in self.players:
             self.deck.deal_player(p)
+            print(p.get_id(), p.cards)
         #TODO
         pass
 
@@ -44,6 +45,7 @@ class Game(object):
         # TODO
         #Preflop
         self.deal_to_players()
+        import pdb; pdb.set_trace()
         for i in utils.play_order_preflop(self.players, self.button_position):
             p = self.players[i]
             decision = p.act(self.state)
@@ -70,8 +72,8 @@ class Game(object):
         self.end_hand()
 
 
-    self.act(i, decision):
-        # TODO change the state of the table according to the decision made by player i
+    def act(self, i, decision):
+        #TODO change the state of the table according to the decision made by player i
         pass
 
 
@@ -85,3 +87,4 @@ class Game(object):
 
 if __name__=="__main__":
     g = Game()
+    g.play_hand()
